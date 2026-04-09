@@ -218,7 +218,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
 
         {/* Show Overpriced Toggle */}
         <div className="filter-group">
-          <span className="filter-label">📉 Non-Rentable</span>
+          <span className="filter-label">📉 Overpriced</span>
           <button
             type="button"
             className={`type-toggle ${filters.showOverpriced ? "type-toggle-active" : ""}`}
@@ -226,7 +226,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
               onChange({ ...filters, showOverpriced: !filters.showOverpriced })
             }
           >
-            {filters.showOverpriced ? "Affichés" : "Masqués"}
+            {filters.showOverpriced ? "Shown" : "Hidden"}
           </button>
         </div>
       </div>

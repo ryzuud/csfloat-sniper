@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { CSFloatListing, EnrichedListing } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 const CSFLOAT_API_URL = "https://csfloat.com/api/v1/listings";
 
 export async function GET() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import type { EnrichedListing, FilterState, ListingsAPIResponse } from "@/types";
 import FilterBar from "@/components/FilterBar";
 import SkinCard from "@/components/SkinCard";
@@ -10,7 +10,6 @@ const POLL_INTERVAL = 300000; // 5 minutes
 
 export default function Home() {
   const [listings, setListings] = useState<EnrichedListing[]>([]);
-  const [filteredListings, setFilteredListings] = useState<EnrichedListing[]>([]);
   const [filters, setFilters] = useState<FilterState>({
     minPrice: 1,
     maxPrice: 0,
@@ -47,7 +46,6 @@ export default function Home() {
       setError("Failed to fetch listings. Check your connection.");
     } finally {
       setLoading(false);
-      setCountdown(POLL_INTERVAL / 1000);
     }
   }, []);
 
@@ -66,7 +64,7 @@ export default function Home() {
   }, [fetchListings]);
 
   // Apply client-side filters
-  useEffect(() => {
+  const filteredListings = useMemo(() => {
     let filtered = [...listings];
 
     // Hide overpriced skins (negative discount) unless toggled on
@@ -137,7 +135,7 @@ export default function Home() {
       filtered = filtered.filter((l) => l.item.float_value <= filters.maxFloat);
     }
 
-    setFilteredListings(filtered);
+    return filtered;
   }, [listings, filters]);
 
   // Polling & countdown
@@ -209,7 +207,7 @@ export default function Home() {
         <span className="stat">
           {filteredListings.length} deal{filteredListings.length !== 1 ? "s" : ""} found
         </span>
-        {filters.minPrice > 0 || filters.maxPrice > 0 || filters.minDiscount > 0 || filters.minStickerValue > 0 || filters.skinSearch || filters.weaponSearch || filters.itemTypes.length > 0 || filters.minFloat > 0 || filters.maxFloat < 1 ? (
+        {filters.minPrice !== 1 || filters.maxPrice > 0 || filters.minDiscount > 0 || filters.minStickerValue > 0 || filters.skinSearch !== "" || filters.weaponSearch !== "" || filters.itemTypes.length > 0 || filters.minFloat > 0 || filters.maxFloat < 1 || filters.showOverpriced ? (
           <button
             className="clear-filters"
             onClick={() => setFilters({ minPrice: 1, maxPrice: 0, minDiscount: 0, minStickerValue: 0, skinSearch: "", weaponSearch: "", itemTypes: [], minFloat: 0, maxFloat: 1, showOverpriced: false })}
