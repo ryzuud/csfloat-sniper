@@ -1,6 +1,7 @@
 "use client";
 
 import { EnrichedListing } from "@/types";
+import { memo } from "react";
 import Image from "next/image";
 
 interface SkinCardProps {
@@ -37,7 +38,7 @@ function getRarityGradient(rarity: number): string {
   return gradients[rarity] || gradients[1];
 }
 
-export default function SkinCard({ listing }: SkinCardProps) {
+const SkinCard = memo(function SkinCard({ listing }: SkinCardProps) {
   const { item, price, discount_percentage, id } = listing;
   const priceInDollars = (price / 100).toFixed(2);
   const refPriceInDollars =
@@ -114,4 +115,6 @@ export default function SkinCard({ listing }: SkinCardProps) {
       </div>
     </a>
   );
-}
+});
+
+export default SkinCard;

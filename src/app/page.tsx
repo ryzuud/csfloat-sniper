@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import type { EnrichedListing, FilterState, ListingsAPIResponse } from "@/types";
 import FilterBar from "@/components/FilterBar";
 import SkinCard from "@/components/SkinCard";
@@ -10,7 +10,6 @@ const POLL_INTERVAL = 300000; // 5 minutes
 
 export default function Home() {
   const [listings, setListings] = useState<EnrichedListing[]>([]);
-  const [filteredListings, setFilteredListings] = useState<EnrichedListing[]>([]);
   const [filters, setFilters] = useState<FilterState>({
     minPrice: 1,
     maxPrice: 0,
@@ -65,9 +64,10 @@ export default function Home() {
     }, 1000);
   }, [fetchListings]);
 
-  // Apply client-side filters
-  useEffect(() => {
-    let filtered = [...listings];
+  // Apply client-side filters using useMemo
+  // This avoids double rendering that useState + useEffect causes and provides a stable array reference
+  const filteredListings = useMemo(() => {
+    let filtered = listings;
 
     // Hide overpriced skins (negative discount) unless toggled on
     if (!filters.showOverpriced) {
@@ -137,7 +137,7 @@ export default function Home() {
       filtered = filtered.filter((l) => l.item.float_value <= filters.maxFloat);
     }
 
-    setFilteredListings(filtered);
+    return filtered;
   }, [listings, filters]);
 
   // Polling & countdown
