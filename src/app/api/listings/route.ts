@@ -1,9 +1,51 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import type { CSFloatListing, EnrichedListing } from "@/types";
 
 const CSFLOAT_API_URL = "https://csfloat.com/api/v1/listings";
 
-export async function GET() {
+// In-memory store for rate limiting
+const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 30; // 30 requests per minute per IP
+
+// Clean up the rate limit map every 5 minutes to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of rateLimitMap.entries()) {
+    if (now - data.lastReset > RATE_LIMIT_WINDOW_MS) {
+      rateLimitMap.delete(ip);
+    }
+  }
+}, 5 * 60 * 1000);
+
+export async function GET(request: NextRequest) {
+  // Simple Rate Limiting implementation
+  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown-ip";
+  const now = Date.now();
+  const rateLimitData = rateLimitMap.get(ip);
+
+  if (rateLimitData) {
+    if (now - rateLimitData.lastReset < RATE_LIMIT_WINDOW_MS) {
+      if (rateLimitData.count >= MAX_REQUESTS_PER_WINDOW) {
+        return NextResponse.json(
+          {
+            listings: [],
+            timestamp: now,
+            error: "Too many requests. Please try again later.",
+          },
+          { status: 429 }
+        );
+      }
+      rateLimitData.count++;
+    } else {
+      // Reset window
+      rateLimitMap.set(ip, { count: 1, lastReset: now });
+    }
+  } else {
+    // Initial request for IP
+    rateLimitMap.set(ip, { count: 1, lastReset: now });
+  }
+
   const apiKey = process.env.CSFLOAT_API_KEY;
 
   if (!apiKey || apiKey === "your_api_key_here") {
