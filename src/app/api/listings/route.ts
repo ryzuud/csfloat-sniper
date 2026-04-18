@@ -69,7 +69,7 @@ export async function GET() {
         {
           listings: [],
           timestamp: Date.now(),
-          error: `CSFloat API error: ${failedRes.status} ${failedRes.statusText}`,
+          error: "CSFloat API encountered an unexpected error.",
         },
         { status: 200 }
       );
