@@ -66,78 +66,77 @@ export default function Home() {
 
   // Apply client-side filters using useMemo
   // This avoids double rendering that useState + useEffect causes and provides a stable array reference
+  // Optimized to use a single pass over the array
   const filteredListings = useMemo(() => {
-    let filtered = listings;
+    const skinSearch = filters.skinSearch.trim().toLowerCase();
+    const weaponSearch = filters.weaponSearch.trim().toLowerCase();
+    const hasItemTypes = filters.itemTypes.length > 0;
 
-    // Hide overpriced skins (negative discount) unless toggled on
-    if (!filters.showOverpriced) {
-      filtered = filtered.filter((l) => l.discount_percentage >= 0);
-    }
+    return listings.filter((l) => {
+      // Hide overpriced skins (negative discount) unless toggled on
+      if (!filters.showOverpriced && l.discount_percentage < 0) return false;
 
-    if (filters.minPrice > 0) {
-      filtered = filtered.filter((l) => l.price / 100 >= filters.minPrice);
-    }
+      // Price filters
+      if (filters.minPrice > 0 && l.price / 100 < filters.minPrice) return false;
+      if (filters.maxPrice > 0 && l.price / 100 > filters.maxPrice) return false;
 
-    if (filters.maxPrice > 0) {
-      filtered = filtered.filter((l) => l.price / 100 <= filters.maxPrice);
-    }
-
-    if (filters.minDiscount > 0 || filters.minStickerValue > 0) {
-      filtered = filtered.filter((l) => {
+      // Discount & Sticker Value filters (OR logic if both present)
+      if (filters.minDiscount > 0 || filters.minStickerValue > 0) {
         const meetsDiscount =
-          filters.minDiscount <= 0 || l.discount_percentage >= filters.minDiscount;
+          filters.minDiscount > 0 && l.discount_percentage >= filters.minDiscount;
         const hasHighStickerValue =
           filters.minStickerValue > 0 &&
           l.total_sticker_value / 100 >= filters.minStickerValue;
 
-        // A listing passes if it meets the discount threshold
-        // OR if it has a high sticker value (bypasses discount requirement)
         if (filters.minDiscount > 0 && filters.minStickerValue > 0) {
-          return meetsDiscount || hasHighStickerValue;
+          if (!meetsDiscount && !hasHighStickerValue) return false;
+        } else if (filters.minDiscount > 0) {
+          if (!meetsDiscount) return false;
+        } else {
+          if (!hasHighStickerValue) return false;
         }
-        // Only discount filter active
-        if (filters.minDiscount > 0) {
-          return meetsDiscount;
-        }
-        // Only sticker value filter active
-        return hasHighStickerValue;
-      });
-    }
+      }
 
-    if (filters.skinSearch.trim()) {
-      const search = filters.skinSearch.toLowerCase();
-      filtered = filtered.filter((l) =>
-        l.item.market_hash_name.toLowerCase().includes(search)
-      );
-    }
-
-    if (filters.weaponSearch.trim()) {
-      const search = filters.weaponSearch.toLowerCase();
-      filtered = filtered.filter((l) => {
-        // market_hash_name format: "AK-47 | Redline (Field-Tested)"
-        const weaponName = l.item.market_hash_name.split("|")[0].trim().toLowerCase();
-        return weaponName.includes(search);
-      });
-    }
-
-    if (filters.itemTypes.length > 0) {
-      filtered = filtered.filter((l) => {
-        if (filters.itemTypes.includes("stattrak") && l.item.is_stattrak) return true;
-        if (filters.itemTypes.includes("souvenir") && l.item.is_souvenir) return true;
-        if (filters.itemTypes.includes("normal") && !l.item.is_stattrak && !l.item.is_souvenir) return true;
+      // Search filters
+      if (
+        skinSearch &&
+        !l.item.market_hash_name.toLowerCase().includes(skinSearch)
+      ) {
         return false;
-      });
-    }
+      }
 
-    if (filters.minFloat > 0) {
-      filtered = filtered.filter((l) => l.item.float_value >= filters.minFloat);
-    }
+      if (weaponSearch) {
+        const weaponName = l.item.market_hash_name
+          .split("|")[0]
+          .trim()
+          .toLowerCase();
+        if (!weaponName.includes(weaponSearch)) return false;
+      }
 
-    if (filters.maxFloat < 1) {
-      filtered = filtered.filter((l) => l.item.float_value <= filters.maxFloat);
-    }
+      // Item type filters
+      if (hasItemTypes) {
+        let typeMatch = false;
+        if (filters.itemTypes.includes("stattrak") && l.item.is_stattrak) {
+          typeMatch = true;
+        } else if (filters.itemTypes.includes("souvenir") && l.item.is_souvenir) {
+          typeMatch = true;
+        } else if (
+          filters.itemTypes.includes("normal") &&
+          !l.item.is_stattrak &&
+          !l.item.is_souvenir
+        ) {
+          typeMatch = true;
+        }
 
-    return filtered;
+        if (!typeMatch) return false;
+      }
+
+      // Float filters
+      if (filters.minFloat > 0 && l.item.float_value < filters.minFloat) return false;
+      if (filters.maxFloat < 1 && l.item.float_value > filters.maxFloat) return false;
+
+      return true;
+    });
   }, [listings, filters]);
 
   // Polling & countdown
