@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { CSFloatListing, EnrichedListing } from "@/types";
+import { parseListings } from "@/lib/parseListings";
 
 const CSFLOAT_API_URL = "https://csfloat.com/api/v1/listings";
 
@@ -76,15 +77,6 @@ export async function GET() {
     }
 
     const rawResults = await Promise.all(responses.map((r) => r.json()));
-
-    const parseListings = (raw: unknown): CSFloatListing[] => {
-      if (Array.isArray(raw)) return raw;
-      if (typeof raw === "object" && raw !== null) {
-        const obj = raw as Record<string, unknown>;
-        return (obj.data ?? obj.listings ?? []) as CSFloatListing[];
-      }
-      return [];
-    };
 
     // Merge all pages and deduplicate by listing ID
     const seen = new Set<string>();
