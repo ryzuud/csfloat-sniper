@@ -50,19 +50,24 @@ export default function Home() {
     }
   }, []);
 
-  const handleManualRefresh = useCallback(() => {
-    // Reset timers
+  const clearTimers = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (countdownRef.current) clearInterval(countdownRef.current);
+  }, []);
 
-    setCountdown(POLL_INTERVAL / 1000);
-    fetchListings();
-
+  const startPolling = useCallback(() => {
     intervalRef.current = setInterval(fetchListings, POLL_INTERVAL);
     countdownRef.current = setInterval(() => {
       setCountdown((prev) => (prev > 0 ? prev - 1 : POLL_INTERVAL / 1000));
     }, 1000);
   }, [fetchListings]);
+
+  const handleManualRefresh = useCallback(() => {
+    clearTimers();
+    setCountdown(POLL_INTERVAL / 1000);
+    fetchListings();
+    startPolling();
+  }, [clearTimers, fetchListings, startPolling]);
 
   // Apply client-side filters using useMemo
   // This avoids double rendering that useState + useEffect causes and provides a stable array reference
@@ -143,18 +148,9 @@ export default function Home() {
   // Polling & countdown
   useEffect(() => {
     fetchListings();
-
-    intervalRef.current = setInterval(fetchListings, POLL_INTERVAL);
-
-    countdownRef.current = setInterval(() => {
-      setCountdown((prev) => (prev > 0 ? prev - 1 : POLL_INTERVAL / 1000));
-    }, 1000);
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
-    };
-  }, [fetchListings]);
+    startPolling();
+    return clearTimers;
+  }, [fetchListings, startPolling, clearTimers]);
 
   return (
     <main className="dashboard">
