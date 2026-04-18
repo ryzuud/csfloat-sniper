@@ -8,20 +8,22 @@ import SkeletonCard from "@/components/SkeletonCard";
 
 const POLL_INTERVAL = 300000; // 5 minutes
 
+const DEFAULT_FILTERS: FilterState = {
+  minPrice: 1,
+  maxPrice: 0,
+  minDiscount: 0,
+  minStickerValue: 0,
+  skinSearch: "",
+  weaponSearch: "",
+  itemTypes: [],
+  minFloat: 0,
+  maxFloat: 1,
+  showOverpriced: false,
+};
+
 export default function Home() {
   const [listings, setListings] = useState<EnrichedListing[]>([]);
-  const [filters, setFilters] = useState<FilterState>({
-    minPrice: 1,
-    maxPrice: 0,
-    minDiscount: 0,
-    minStickerValue: 0,
-    skinSearch: "",
-    weaponSearch: "",
-    itemTypes: [],
-    minFloat: 0,
-    maxFloat: 1,
-    showOverpriced: false,
-  });
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(POLL_INTERVAL / 1000);
@@ -212,7 +214,7 @@ export default function Home() {
         {filters.minPrice > 0 || filters.maxPrice > 0 || filters.minDiscount > 0 || filters.minStickerValue > 0 || filters.skinSearch || filters.weaponSearch || filters.itemTypes.length > 0 || filters.minFloat > 0 || filters.maxFloat < 1 ? (
           <button
             className="clear-filters"
-            onClick={() => setFilters({ minPrice: 1, maxPrice: 0, minDiscount: 0, minStickerValue: 0, skinSearch: "", weaponSearch: "", itemTypes: [], minFloat: 0, maxFloat: 1, showOverpriced: false })}
+            onClick={() => setFilters(DEFAULT_FILTERS)}
           >
             ✕ Clear filters
           </button>
