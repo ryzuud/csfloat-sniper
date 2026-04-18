@@ -85,22 +85,12 @@ export default function Home() {
     if (filters.minDiscount > 0 || filters.minStickerValue > 0) {
       filtered = filtered.filter((l) => {
         const meetsDiscount =
-          filters.minDiscount <= 0 || l.discount_percentage >= filters.minDiscount;
+          filters.minDiscount > 0 && l.discount_percentage >= filters.minDiscount;
         const hasHighStickerValue =
           filters.minStickerValue > 0 &&
           l.total_sticker_value / 100 >= filters.minStickerValue;
 
-        // A listing passes if it meets the discount threshold
-        // OR if it has a high sticker value (bypasses discount requirement)
-        if (filters.minDiscount > 0 && filters.minStickerValue > 0) {
-          return meetsDiscount || hasHighStickerValue;
-        }
-        // Only discount filter active
-        if (filters.minDiscount > 0) {
-          return meetsDiscount;
-        }
-        // Only sticker value filter active
-        return hasHighStickerValue;
+        return meetsDiscount || hasHighStickerValue;
       });
     }
 
