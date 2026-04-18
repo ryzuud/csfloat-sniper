@@ -5,6 +5,7 @@ import type { EnrichedListing, FilterState, ListingsAPIResponse } from "@/types"
 import FilterBar from "@/components/FilterBar";
 import SkinCard from "@/components/SkinCard";
 import SkeletonCard from "@/components/SkeletonCard";
+import { filterListings } from "@/utils/filters";
 
 const POLL_INTERVAL = 300000; // 5 minutes
 
@@ -67,77 +68,7 @@ export default function Home() {
   // Apply client-side filters using useMemo
   // This avoids double rendering that useState + useEffect causes and provides a stable array reference
   const filteredListings = useMemo(() => {
-    let filtered = listings;
-
-    // Hide overpriced skins (negative discount) unless toggled on
-    if (!filters.showOverpriced) {
-      filtered = filtered.filter((l) => l.discount_percentage >= 0);
-    }
-
-    if (filters.minPrice > 0) {
-      filtered = filtered.filter((l) => l.price / 100 >= filters.minPrice);
-    }
-
-    if (filters.maxPrice > 0) {
-      filtered = filtered.filter((l) => l.price / 100 <= filters.maxPrice);
-    }
-
-    if (filters.minDiscount > 0 || filters.minStickerValue > 0) {
-      filtered = filtered.filter((l) => {
-        const meetsDiscount =
-          filters.minDiscount <= 0 || l.discount_percentage >= filters.minDiscount;
-        const hasHighStickerValue =
-          filters.minStickerValue > 0 &&
-          l.total_sticker_value / 100 >= filters.minStickerValue;
-
-        // A listing passes if it meets the discount threshold
-        // OR if it has a high sticker value (bypasses discount requirement)
-        if (filters.minDiscount > 0 && filters.minStickerValue > 0) {
-          return meetsDiscount || hasHighStickerValue;
-        }
-        // Only discount filter active
-        if (filters.minDiscount > 0) {
-          return meetsDiscount;
-        }
-        // Only sticker value filter active
-        return hasHighStickerValue;
-      });
-    }
-
-    if (filters.skinSearch.trim()) {
-      const search = filters.skinSearch.toLowerCase();
-      filtered = filtered.filter((l) =>
-        l.item.market_hash_name.toLowerCase().includes(search)
-      );
-    }
-
-    if (filters.weaponSearch.trim()) {
-      const search = filters.weaponSearch.toLowerCase();
-      filtered = filtered.filter((l) => {
-        // market_hash_name format: "AK-47 | Redline (Field-Tested)"
-        const weaponName = l.item.market_hash_name.split("|")[0].trim().toLowerCase();
-        return weaponName.includes(search);
-      });
-    }
-
-    if (filters.itemTypes.length > 0) {
-      filtered = filtered.filter((l) => {
-        if (filters.itemTypes.includes("stattrak") && l.item.is_stattrak) return true;
-        if (filters.itemTypes.includes("souvenir") && l.item.is_souvenir) return true;
-        if (filters.itemTypes.includes("normal") && !l.item.is_stattrak && !l.item.is_souvenir) return true;
-        return false;
-      });
-    }
-
-    if (filters.minFloat > 0) {
-      filtered = filtered.filter((l) => l.item.float_value >= filters.minFloat);
-    }
-
-    if (filters.maxFloat < 1) {
-      filtered = filtered.filter((l) => l.item.float_value <= filters.maxFloat);
-    }
-
-    return filtered;
+    return filterListings(listings, filters);
   }, [listings, filters]);
 
   // Polling & countdown
