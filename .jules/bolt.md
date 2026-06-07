@@ -1,3 +1,6 @@
 ## 2024-04-15 - Top-level Timers and Derived State Anti-patterns
 **Learning:** Top-level countdown timers (like a `setInterval` that updates state every second) will cause the entire component tree to re-render. If child components like complex lists or cards are not memoized, this causes significant performance issues (e.g. 1-second full app re-renders). Additionally, using `useState` and `useEffect` for derived data like "filtered lists" creates unnecessary double-renders when data changes.
 **Action:** Use `useMemo` for derived state directly from the source arrays to prevent double-rendering and maintain stable references. Wrap complex list items in `React.memo` to shield them from high-frequency parent state updates.
+## 2026-05-18 - Pre-compute properties to optimize filter loops
+**Learning:** Performing string manipulation (`toLowerCase`, `split`, `trim`) inside a loop that filters a large dataset on every render/filter change is highly inefficient and creates performance bottlenecks.
+**Action:** When filtering complex datasets based on computed string derivations, pre-compute the properties either on the backend or once on initial client fetch and store them on the object payload, allowing simple property access in the filtering loop.

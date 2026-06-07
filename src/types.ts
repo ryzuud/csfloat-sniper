@@ -88,6 +88,8 @@ export interface EnrichedListing extends CSFloatListing {
   discount_percentage: number;
   reference_price: number;
   total_sticker_value: number; // in cents
+  weapon_name: string;
+  normalized_skin_name: string;
 }
 
 // ─── UI Filter State ───
