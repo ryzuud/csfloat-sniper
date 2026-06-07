@@ -92,14 +92,6 @@ export interface EnrichedListing extends CSFloatListing {
 
 // ─── UI Filter State ───
 
-export type WearFilter =
-  | "Any"
-  | "Factory New"
-  | "Minimal Wear"
-  | "Field-Tested"
-  | "Well-Worn"
-  | "Battle-Scarred";
-
 export type ItemType = "normal" | "stattrak" | "souvenir";
 
 export interface FilterState {
