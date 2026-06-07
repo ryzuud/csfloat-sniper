@@ -28,17 +28,13 @@ export function filterListings(
 
     if (filters.minDiscount > 0 || filters.minStickerValue > 0) {
       const meetsDiscount =
-        filters.minDiscount <= 0 || l.discount_percentage >= filters.minDiscount;
+        filters.minDiscount > 0 && l.discount_percentage >= filters.minDiscount;
       const hasHighStickerValue =
         filters.minStickerValue > 0 &&
         l.total_sticker_value / 100 >= filters.minStickerValue;
 
-      if (filters.minDiscount > 0 && filters.minStickerValue > 0) {
-        if (!meetsDiscount && !hasHighStickerValue) return false;
-      } else if (filters.minDiscount > 0) {
-        if (!meetsDiscount) return false;
-      } else {
-        if (!hasHighStickerValue) return false;
+      if (!meetsDiscount && !hasHighStickerValue) {
+        return false;
       }
     }
 
