@@ -20,7 +20,8 @@ setInterval(() => {
 
 export async function GET(request: NextRequest) {
   // Simple Rate Limiting implementation
-  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown-ip";
+  // @ts-expect-error - request.ip is injected by Vercel/Next.js but missing in local NextRequest types
+  const ip = request.ip ?? "unknown-ip";
   const now = Date.now();
   const rateLimitData = rateLimitMap.get(ip);
 
