@@ -171,7 +171,6 @@ export async function GET(request: NextRequest) {
       timestamp: Date.now(),
     });
   } catch (error) {
-    console.error("CSFloat API fetch error:", error);
     return NextResponse.json(
       {
         listings: [],
