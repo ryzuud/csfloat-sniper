@@ -40,16 +40,13 @@ export function filterListings(
 
     if (
       normalizedSkinSearch &&
-      !l.item.market_hash_name.toLowerCase().includes(normalizedSkinSearch)
+      !l.normalized_skin_name.includes(normalizedSkinSearch)
     ) {
       return false;
     }
 
-    if (normalizedWeaponSearch) {
-      const weaponName = l.item.market_hash_name.split("|")[0].trim().toLowerCase();
-      if (!weaponName.includes(normalizedWeaponSearch)) {
-        return false;
-      }
+    if (normalizedWeaponSearch && !l.weapon_name.includes(normalizedWeaponSearch)) {
+      return false;
     }
 
     if (hasItemTypesFilter) {

@@ -33,7 +33,7 @@ describe('GET /api/listings', () => {
   it('should return error if API key is not configured', async () => {
     delete process.env.CSFLOAT_API_KEY;
 
-    const response = await GET();
+    const response = await GET({ headers: { get: () => "127.0.0.1" } } as any);
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -44,7 +44,7 @@ describe('GET /api/listings', () => {
   it('should return error if API key is the default value', async () => {
     process.env.CSFLOAT_API_KEY = 'your_api_key_here';
 
-    const response = await GET();
+    const response = await GET({ headers: { get: () => "127.0.0.1" } } as any);
     const data = await response.json();
 
     expect(data.error).toBe('CSFloat API key not configured. Add your key in .env.local');
@@ -58,7 +58,7 @@ describe('GET /api/listings', () => {
       ok: false,
     });
 
-    const response = await GET();
+    const response = await GET({ headers: { get: () => "127.0.0.1" } } as any);
     const data = await response.json();
 
     expect(data.error).toBe('Rate limited by CSFloat. Please wait a moment.');
@@ -72,7 +72,7 @@ describe('GET /api/listings', () => {
       ok: false,
     });
 
-    const response = await GET();
+    const response = await GET({ headers: { get: () => "127.0.0.1" } } as any);
     const data = await response.json();
 
     expect(data.error).toBe('Invalid CSFloat API key. Check your .env.local file.');
@@ -87,7 +87,7 @@ describe('GET /api/listings', () => {
       ok: false,
     });
 
-    const response = await GET();
+    const response = await GET({ headers: { get: () => "127.0.0.1" } } as any);
     const data = await response.json();
 
     expect(data.error).toBe('CSFloat API error: 500 Internal Server Error');
@@ -100,6 +100,7 @@ describe('GET /api/listings', () => {
       id: '1',
       price: 9000, // 90.00
       item: {
+        market_hash_name: 'AK-47 | Redline (Field-Tested)',
         scm: { price: 10000 }, // 100.00
         stickers: []
       },
@@ -110,6 +111,7 @@ describe('GET /api/listings', () => {
       id: '2',
       price: 8000, // 80.00
       item: {
+        market_hash_name: 'AWP | Asiimov (Field-Tested)',
         scm: { price: 10000 },
         stickers: [
           { reference: { price: 500 } }
@@ -150,7 +152,7 @@ describe('GET /api/listings', () => {
       .mockResolvedValueOnce(mockResponseEmpty)
       .mockResolvedValueOnce(mockResponseEmpty);
 
-    const response = await GET();
+    const response = await GET({ headers: { get: () => "127.0.0.1" } } as any);
     const data = await response.json();
 
     expect(data.error).toBeUndefined();
@@ -161,12 +163,16 @@ describe('GET /api/listings', () => {
     expect(data.listings[0].discount_percentage).toBe(20);
     expect(data.listings[0].reference_price).toBe(10000);
     expect(data.listings[0].total_sticker_value).toBe(500);
+    expect(data.listings[0].weapon_name).toBe('awp');
+    expect(data.listings[0].normalized_skin_name).toBe('awp | asiimov (field-tested)');
 
     // Listing 1 discount: (10000 - 9000) / 10000 = 10%
     expect(data.listings[1].id).toBe('1');
     expect(data.listings[1].discount_percentage).toBe(10);
     expect(data.listings[1].reference_price).toBe(10000);
     expect(data.listings[1].total_sticker_value).toBe(0);
+    expect(data.listings[1].weapon_name).toBe('ak-47');
+    expect(data.listings[1].normalized_skin_name).toBe('ak-47 | redline (field-tested)');
   });
 
   it('should handle fetch throwing an exception', async () => {
@@ -174,7 +180,7 @@ describe('GET /api/listings', () => {
 
     (global.fetch as any).mockRejectedValue(new Error('Network error'));
 
-    const response = await GET();
+    const response = await GET({ headers: { get: () => "127.0.0.1" } } as any);
     const data = await response.json();
 
     expect(data.error).toBe('Failed to connect to CSFloat. Check your internet connection.');

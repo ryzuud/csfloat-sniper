@@ -155,11 +155,14 @@ export async function GET(request: NextRequest) {
         0
       );
 
+      const marketHashName = listing.item.market_hash_name || "";
       return {
         ...listing,
         discount_percentage: Math.round(discount * 10) / 10,
         reference_price: referencePrice,
         total_sticker_value: totalStickerValue,
+        weapon_name: marketHashName.split("|")[0].trim().toLowerCase(),
+        normalized_skin_name: marketHashName.toLowerCase(),
       };
     });
 

@@ -7,6 +7,8 @@ const mockListing = (overrides: Partial<EnrichedListing> = {}): EnrichedListing 
   price: 1000, // $10.00
   discount_percentage: 10,
   total_sticker_value: 500, // $5.00
+  weapon_name: 'ak-47',
+  normalized_skin_name: 'ak-47 | redline (field-tested)',
   item: {
     market_hash_name: 'AK-47 | Redline (Field-Tested)',
     is_stattrak: false,
