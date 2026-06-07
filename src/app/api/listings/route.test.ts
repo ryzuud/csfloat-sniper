@@ -33,7 +33,7 @@ describe('GET /api/listings', () => {
   it('should return error if API key is not configured', async () => {
     delete process.env.CSFLOAT_API_KEY;
 
-    const response = await GET();
+    const req = new Request("http://localhost/api/listings"); const response = await GET(req as any);
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -44,7 +44,7 @@ describe('GET /api/listings', () => {
   it('should return error if API key is the default value', async () => {
     process.env.CSFLOAT_API_KEY = 'your_api_key_here';
 
-    const response = await GET();
+    const req = new Request("http://localhost/api/listings"); const response = await GET(req as any);
     const data = await response.json();
 
     expect(data.error).toBe('CSFloat API key not configured. Add your key in .env.local');
@@ -58,7 +58,7 @@ describe('GET /api/listings', () => {
       ok: false,
     });
 
-    const response = await GET();
+    const req = new Request("http://localhost/api/listings"); const response = await GET(req as any);
     const data = await response.json();
 
     expect(data.error).toBe('Rate limited by CSFloat. Please wait a moment.');
@@ -72,7 +72,7 @@ describe('GET /api/listings', () => {
       ok: false,
     });
 
-    const response = await GET();
+    const req = new Request("http://localhost/api/listings"); const response = await GET(req as any);
     const data = await response.json();
 
     expect(data.error).toBe('Invalid CSFloat API key. Check your .env.local file.');
@@ -87,7 +87,7 @@ describe('GET /api/listings', () => {
       ok: false,
     });
 
-    const response = await GET();
+    const req = new Request("http://localhost/api/listings"); const response = await GET(req as any);
     const data = await response.json();
 
     expect(data.error).toBe('CSFloat API error: 500 Internal Server Error');
@@ -150,7 +150,7 @@ describe('GET /api/listings', () => {
       .mockResolvedValueOnce(mockResponseEmpty)
       .mockResolvedValueOnce(mockResponseEmpty);
 
-    const response = await GET();
+    const req = new Request("http://localhost/api/listings"); const response = await GET(req as any);
     const data = await response.json();
 
     expect(data.error).toBeUndefined();
@@ -174,7 +174,7 @@ describe('GET /api/listings', () => {
 
     (global.fetch as any).mockRejectedValue(new Error('Network error'));
 
-    const response = await GET();
+    const req = new Request("http://localhost/api/listings"); const response = await GET(req as any);
     const data = await response.json();
 
     expect(data.error).toBe('Failed to connect to CSFloat. Check your internet connection.');
