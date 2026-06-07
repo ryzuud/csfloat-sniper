@@ -32,8 +32,9 @@ describe('GET /api/listings', () => {
 
   it('should return error if API key is not configured', async () => {
     delete process.env.CSFLOAT_API_KEY;
+    const request = { headers: { get: () => '127.0.0.1' } } as any;
 
-    const response = await GET();
+    const response = await GET(request);
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -43,8 +44,9 @@ describe('GET /api/listings', () => {
 
   it('should return error if API key is the default value', async () => {
     process.env.CSFLOAT_API_KEY = 'your_api_key_here';
+    const request = { headers: { get: () => '127.0.0.1' } } as any;
 
-    const response = await GET();
+    const response = await GET(request);
     const data = await response.json();
 
     expect(data.error).toBe('CSFloat API key not configured. Add your key in .env.local');
@@ -52,13 +54,14 @@ describe('GET /api/listings', () => {
 
   it('should handle rate limiting (429)', async () => {
     process.env.CSFLOAT_API_KEY = 'valid_key';
+    const request = { headers: { get: () => '127.0.0.1' } } as any;
 
     (global.fetch as any).mockResolvedValue({
       status: 429,
       ok: false,
     });
 
-    const response = await GET();
+    const response = await GET(request);
     const data = await response.json();
 
     expect(data.error).toBe('Rate limited by CSFloat. Please wait a moment.');
@@ -66,13 +69,14 @@ describe('GET /api/listings', () => {
 
   it('should handle unauthorized (401)', async () => {
     process.env.CSFLOAT_API_KEY = 'invalid_key';
+    const request = { headers: { get: () => '127.0.0.1' } } as any;
 
     (global.fetch as any).mockResolvedValue({
       status: 401,
       ok: false,
     });
 
-    const response = await GET();
+    const response = await GET(request);
     const data = await response.json();
 
     expect(data.error).toBe('Invalid CSFloat API key. Check your .env.local file.');
@@ -80,6 +84,7 @@ describe('GET /api/listings', () => {
 
   it('should handle generic fetch errors (non-ok responses)', async () => {
     process.env.CSFLOAT_API_KEY = 'valid_key';
+    const request = { headers: { get: () => '127.0.0.1' } } as any;
 
     (global.fetch as any).mockResolvedValue({
       status: 500,
@@ -87,7 +92,7 @@ describe('GET /api/listings', () => {
       ok: false,
     });
 
-    const response = await GET();
+    const response = await GET(request);
     const data = await response.json();
 
     expect(data.error).toBe('CSFloat API error: 500 Internal Server Error');
@@ -95,6 +100,7 @@ describe('GET /api/listings', () => {
 
   it('should successfully fetch, deduplicate, calculate discount and sort listings', async () => {
     process.env.CSFLOAT_API_KEY = 'valid_key';
+    const request = { headers: { get: () => '127.0.0.1' } } as any;
 
     const mockListing1 = {
       id: '1',
@@ -150,7 +156,7 @@ describe('GET /api/listings', () => {
       .mockResolvedValueOnce(mockResponseEmpty)
       .mockResolvedValueOnce(mockResponseEmpty);
 
-    const response = await GET();
+    const response = await GET(request);
     const data = await response.json();
 
     expect(data.error).toBeUndefined();
@@ -171,10 +177,11 @@ describe('GET /api/listings', () => {
 
   it('should handle fetch throwing an exception', async () => {
     process.env.CSFLOAT_API_KEY = 'valid_key';
+    const request = { headers: { get: () => '127.0.0.1' } } as any;
 
     (global.fetch as any).mockRejectedValue(new Error('Network error'));
 
-    const response = await GET();
+    const response = await GET(request);
     const data = await response.json();
 
     expect(data.error).toBe('Failed to connect to CSFloat. Check your internet connection.');

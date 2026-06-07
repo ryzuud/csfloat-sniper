@@ -5,6 +5,7 @@ import type { EnrichedListing, FilterState, ListingsAPIResponse } from "@/types"
 import FilterBar from "@/components/FilterBar";
 import SkinCard from "@/components/SkinCard";
 import SkeletonCard from "@/components/SkeletonCard";
+import AutoRefreshCountdown from "@/components/AutoRefreshCountdown";
 import { filterListings } from "@/utils/filters";
 
 const POLL_INTERVAL = 300000; // 5 minutes
@@ -25,10 +26,9 @@ export default function Home() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(POLL_INTERVAL / 1000);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchListings = useCallback(async () => {
     try {
@@ -47,22 +47,18 @@ export default function Home() {
       setError("Failed to fetch listings. Check your connection.");
     } finally {
       setLoading(false);
-      setCountdown(POLL_INTERVAL / 1000);
+      setRefreshKey((prev) => prev + 1);
     }
   }, []);
 
   const handleManualRefresh = useCallback(() => {
     // Reset timers
     if (intervalRef.current) clearInterval(intervalRef.current);
-    if (countdownRef.current) clearInterval(countdownRef.current);
 
-    setCountdown(POLL_INTERVAL / 1000);
+    setRefreshKey((prev) => prev + 1);
     fetchListings();
 
     intervalRef.current = setInterval(fetchListings, POLL_INTERVAL);
-    countdownRef.current = setInterval(() => {
-      setCountdown((prev) => (prev > 0 ? prev - 1 : POLL_INTERVAL / 1000));
-    }, 1000);
   }, [fetchListings]);
 
   // Apply client-side filters using useMemo
@@ -77,13 +73,8 @@ export default function Home() {
 
     intervalRef.current = setInterval(fetchListings, POLL_INTERVAL);
 
-    countdownRef.current = setInterval(() => {
-      setCountdown((prev) => (prev > 0 ? prev - 1 : POLL_INTERVAL / 1000));
-    }, 1000);
-
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, [fetchListings]);
 
@@ -112,10 +103,10 @@ export default function Home() {
           >
             🔄 Refresh
           </button>
-          <div className="refresh-countdown">
-            <span className="countdown-label">Auto-refresh</span>
-            <span className="countdown-value">{Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, "0")}</span>
-          </div>
+          <AutoRefreshCountdown
+            pollInterval={POLL_INTERVAL}
+            resetKey={refreshKey}
+          />
           {lastUpdate && (
             <div className="last-update">
               Updated {lastUpdate.toLocaleTimeString()}
