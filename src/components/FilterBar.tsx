@@ -24,6 +24,13 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
     onChange({ ...filters, itemTypes: updated });
   };
 
+  const handleNumberChange = (field: keyof FilterState) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange({
+      ...filters,
+      [field]: e.target.value ? Number(e.target.value) : (field === 'maxFloat' ? 1 : 0),
+    });
+  };
+
   return (
     <div className="filter-bar">
       {/* Row 1: Search fields */}
@@ -97,12 +104,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
             value={filters.minPrice || ""}
             placeholder="No min"
             className="filter-input"
-            onChange={(e) =>
-              onChange({
-                ...filters,
-                minPrice: e.target.value ? Number(e.target.value) : 0,
-              })
-            }
+            onChange={handleNumberChange("minPrice")}
           />
         </div>
 
@@ -119,12 +121,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
             value={filters.maxPrice || ""}
             placeholder="No limit"
             className="filter-input"
-            onChange={(e) =>
-              onChange({
-                ...filters,
-                maxPrice: e.target.value ? Number(e.target.value) : 0,
-              })
-            }
+            onChange={handleNumberChange("maxPrice")}
           />
         </div>
 
@@ -142,12 +139,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
             value={filters.minDiscount || ""}
             placeholder="0%"
             className="filter-input"
-            onChange={(e) =>
-              onChange({
-                ...filters,
-                minDiscount: e.target.value ? Number(e.target.value) : 0,
-              })
-            }
+            onChange={handleNumberChange("minDiscount")}
           />
         </div>
 
@@ -164,12 +156,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
             value={filters.minStickerValue || ""}
             placeholder="No min"
             className="filter-input"
-            onChange={(e) =>
-              onChange({
-                ...filters,
-                minStickerValue: e.target.value ? Number(e.target.value) : 0,
-              })
-            }
+            onChange={handleNumberChange("minStickerValue")}
           />
         </div>
 
@@ -186,12 +173,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
             step={0.01}
             value={filters.minFloat}
             className="filter-input"
-            onChange={(e) =>
-              onChange({
-                ...filters,
-                minFloat: e.target.value ? Number(e.target.value) : 0,
-              })
-            }
+            onChange={handleNumberChange("minFloat")}
           />
         </div>
 
@@ -207,12 +189,7 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
             step={0.01}
             value={filters.maxFloat}
             className="filter-input"
-            onChange={(e) =>
-              onChange({
-                ...filters,
-                maxFloat: e.target.value ? Number(e.target.value) : 1,
-              })
-            }
+            onChange={handleNumberChange("maxFloat")}
           />
         </div>
 
